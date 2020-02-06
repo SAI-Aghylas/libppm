@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Pixel {
     pub red: u8,
     pub green: u8,
@@ -45,10 +45,31 @@ impl Pixel {
     }
 }
 
+#[derive(Clone)]
 pub struct Image {
     vector: Vec<Pixel>,
     width: usize,
     height: usize,
+}
+
+impl Image {
+    fn new(vector: Vec<Pixel>, width: usize, height: usize) -> Image {
+        Image {
+            vector: vector,
+            width: width,
+            height: height,
+        }
+    }
+
+    fn vector(self) -> Vec<Pixel> {
+        self.vector
+    }
+    fn width(self) -> usize {
+        self.width
+    }
+    fn height(self) -> usize {
+        self.height
+    }
 }
 
 //use std::fmt;
@@ -68,6 +89,9 @@ mod tests {
 
     fn get_sample_pixel() -> Pixel {
         Pixel::new(8, 12, 16)
+    }
+    fn get_sample_image() -> Image {
+        Image::new(vec![get_sample_pixel()], 12, 16)
     }
 
     #[test]
@@ -91,6 +115,19 @@ mod tests {
     }
 
     #[test]
+    fn test_vecto() {
+        assert_eq!(get_sample_image().vector(), vec![get_sample_pixel()])
+    }
+    #[test]
+    fn test_width() {
+        assert_eq!(get_sample_image().width, 12)
+    }
+    #[test]
+    fn test_height() {
+        assert_eq!(get_sample_image().height, 16)
+    }
+
+    #[test]
     fn test_revert() {
         let sample_pix: Pixel = get_sample_pixel();
         let inverted_pix: Pixel = sample_pix.invert();
@@ -109,7 +146,7 @@ mod tests {
     }
 
     #[test]
-    fn test_eq() {
+    fn test_eq_pixel() {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
         let pix_3: Pixel = get_sample_pixel().invert();
@@ -119,7 +156,7 @@ mod tests {
     }
 
     #[test]
-    fn test_partial_eq() {
+    fn test_partial_eq_pixel() {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
         let pix_3: Pixel = get_sample_pixel().invert();
