@@ -28,7 +28,7 @@ impl Pixel {
         format!("(r:{}, g:{}, b:{})", self.red, self.green, self.blue)
     }
 
-    fn invert(&self) -> Pixel {
+    fn invert_pixel(self) -> Pixel {
         Pixel::new(255 - self.red(), 255 - self.green(), 255 - self.blue())
     }
 
@@ -40,7 +40,7 @@ impl Pixel {
         self.blue == other.blue || self.red == other.red || self.green == other.green
     }
 
-    fn grayscale(&self) -> Pixel {
+    fn grayscale_pixel(self) -> Pixel {
         Pixel::new(self.red() / 3, self.green() / 3, self.blue() / 3)
     }
 }
@@ -61,6 +61,46 @@ impl Image {
         }
     }
 
+    fn eq(self, other: Image) -> bool {
+        let mut b = true;
+        if (self.width == other.width
+            && self.height == other.height
+            && self.vector.len() == other.vector.len())
+        {
+            let mut i = 0;
+            loop {
+                if (i >= self.vector.len()) {
+                    break;
+                };
+                if (!self.vector[i].eq(other.vector[i])) {
+                    break b = false;
+                }
+                i += 1;
+            }
+        } else {
+            b = false;
+        };
+        b
+    }
+    fn invert_image(self) -> Image {
+        let mut vect_inv = vec![];
+        let mut j = 0;
+        for i in self.vector.iter() {
+            vect_inv.push(i.invert_pixel());
+            j += 1;
+        }
+        Image::new(vect_inv, self.width, self.height)
+    }
+
+    fn grayscale_image(self) -> Image {
+        let mut vect_inv = vec![];
+        let mut j = 0;
+        for i in self.vector.iter() {
+            vect_inv.push(i.grayscale_pixel());
+            j += 1;
+        }
+        Image::new(vect_inv, self.width, self.height)
+    }
     fn vector(self) -> Vec<Pixel> {
         self.vector
     }
@@ -115,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_vecto() {
+    fn test_vector() {
         assert_eq!(get_sample_image().vector(), vec![get_sample_pixel()])
     }
     #[test]
@@ -128,18 +168,18 @@ mod tests {
     }
 
     #[test]
-    fn test_revert() {
+    fn test_invert_pixel() {
         let sample_pix: Pixel = get_sample_pixel();
-        let inverted_pix: Pixel = sample_pix.invert();
+        let inverted_pix: Pixel = sample_pix.invert_pixel();
         assert_eq!(inverted_pix.red(), 255 - sample_pix.red());
         assert_eq!(inverted_pix.green(), 255 - sample_pix.green());
         assert_eq!(inverted_pix.blue(), 255 - sample_pix.blue());
     }
 
     #[test]
-    fn test_grayscale() {
+    fn test_grayscale_pixel() {
         let sample_pix: Pixel = get_sample_pixel();
-        let grayscaled_pix: Pixel = sample_pix.grayscale();
+        let grayscaled_pix: Pixel = sample_pix.grayscale_pixel();
         assert_eq!(grayscaled_pix.red(), sample_pix.red() / 3);
         assert_eq!(grayscaled_pix.green(), sample_pix.green() / 3);
         assert_eq!(grayscaled_pix.blue(), sample_pix.blue() / 3);
@@ -149,7 +189,7 @@ mod tests {
     fn test_eq_pixel() {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
-        let pix_3: Pixel = get_sample_pixel().invert();
+        let pix_3: Pixel = get_sample_pixel().invert_pixel();
 
         assert_eq!(pix_1.eq(pix_2), true);
         assert_eq!(pix_1.eq(pix_3), false);
@@ -159,9 +199,68 @@ mod tests {
     fn test_partial_eq_pixel() {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
-        let pix_3: Pixel = get_sample_pixel().invert();
+        let pix_3: Pixel = get_sample_pixel().invert_pixel();
 
         assert_eq!(pix_1.partial_eq(pix_2), true);
         assert_eq!(pix_1.partial_eq(pix_3), false);
+    }
+    #[test]
+    fn test_eq_image() {
+        let img1: Image = get_sample_image();
+        let img2: Image = Image::new(vec![get_sample_pixel()], 3, 4);
+        let img3: Image = get_sample_image();
+        let img4: Image = Image::new(vec![Pixel::new(5, 12, 16)], 12, 16);
+        assert_eq!(img1.clone().eq(img3), true);
+        assert_eq!(img1.clone().eq(img2), false);
+        assert_eq!(img1.clone().eq(img4), false);
+    }
+    #[test]
+    fn test_invert_image() {
+        let sample_img: Image = get_sample_image();
+        let inverted_img: Image = sample_img.clone().invert_image();
+        let mut j = 0;
+        loop {
+            assert_eq!(
+                inverted_img.vector[j].red(),
+                255 - sample_img.vector[j].red()
+            );
+            assert_eq!(
+                inverted_img.vector[j].green(),
+                255 - sample_img.vector[j].green()
+            );
+            assert_eq!(
+                inverted_img.vector[j].blue(),
+                255 - sample_img.vector[j].blue()
+            );
+            j += 1;
+            if (j == sample_img.vector.len()) {
+                break;
+            }
+        }
+    }
+
+    #[test]
+    fn test_grayscale_image() {
+        let sample_img: Image = get_sample_image();
+        let inverted_img: Image = sample_img.clone().grayscale_image();
+        let mut j = 0;
+        loop {
+            assert_eq!(
+                inverted_img.vector[j].red(),
+                (sample_img.vector[j].red()) / 3
+            );
+            assert_eq!(
+                inverted_img.vector[j].green(),
+                (sample_img.vector[j].green()) / 3
+            );
+            assert_eq!(
+                inverted_img.vector[j].blue(),
+                (sample_img.vector[j].blue()) / 3
+            );
+            j += 1;
+            if (j == sample_img.vector.len()) {
+                break;
+            }
+        }
     }
 }
