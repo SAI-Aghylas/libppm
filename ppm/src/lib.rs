@@ -224,7 +224,7 @@ mod tests {
     #[test]
     fn test_save_image() {
         assert_eq!(
-            get_sample_image().save(Path::new("image_for_test.ppm")),
+            get_sample_image().save(Path::new("image_from_test.ppm")),
             (get_sample_image().width() * get_sample_image().height()) as i32
         )
     }
