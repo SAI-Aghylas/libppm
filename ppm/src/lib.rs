@@ -1,3 +1,7 @@
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Pixel {
     pub red: u8,
@@ -70,6 +74,37 @@ impl Image {
     fn height(self) -> usize {
         self.height
     }
+
+    fn save(self, file_name: &Path) -> i32 {
+        let mut file: File = match File::create(file_name) {
+            Ok(file) => file,
+            Err(err) => panic!("error when saving image: {}", err),
+        };
+
+        let mut nb_written: i16 = 0;
+        let mut nb_saved_pixels: i32 = 0;
+
+        let img_vec: Vec<Pixel> = self.clone().vector();
+        let img_heigt: usize = self.clone().height();
+        let img_width: usize = self.clone().width();
+
+        write!(file, "P3\n{} {}\n{}\n", img_width, img_heigt, 255);
+
+        for val in img_vec.iter() {
+            write!(file, "{} {} {}", val.red(), val.green(), val.blue());
+            nb_written += 1;
+            nb_saved_pixels += 1;
+
+            if nb_written % (img_width as i16) == 0 {
+                write!(file, "\n");
+                nb_written = 0;
+            } else {
+                write!(file, "\t");
+            }
+        }
+
+        nb_saved_pixels
+    }
 }
 
 //use std::fmt;
@@ -91,7 +126,18 @@ mod tests {
         Pixel::new(8, 12, 16)
     }
     fn get_sample_image() -> Image {
-        Image::new(vec![get_sample_pixel()], 12, 16)
+        Image::new(
+            vec![
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+            ],
+            3,
+            2,
+        )
     }
 
     #[test]
@@ -115,16 +161,26 @@ mod tests {
     }
 
     #[test]
-    fn test_vecto() {
-        assert_eq!(get_sample_image().vector(), vec![get_sample_pixel()])
+    fn test_vector() {
+        assert_eq!(
+            get_sample_image().vector(),
+            vec![
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel()
+            ]
+        )
     }
     #[test]
     fn test_width() {
-        assert_eq!(get_sample_image().width, 12)
+        assert_eq!(get_sample_image().width, 3)
     }
     #[test]
     fn test_height() {
-        assert_eq!(get_sample_image().height, 16)
+        assert_eq!(get_sample_image().height, 2)
     }
 
     #[test]
@@ -163,5 +219,13 @@ mod tests {
 
         assert_eq!(pix_1.partial_eq(pix_2), true);
         assert_eq!(pix_1.partial_eq(pix_3), false);
+    }
+
+    #[test]
+    fn test_save_image() {
+        assert_eq!(
+            get_sample_image().save(Path::new("image_for_test.ppm")),
+            (get_sample_image().width() * get_sample_image().height()) as i32
+        )
     }
 }
