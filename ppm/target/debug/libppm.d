@@ -1,1 +1,1 @@
-D:\BUREAU\corsESGI\Rust\Big_Project\libppm\ppm\target\debug\libppm.rlib: D:\BUREAU\corsESGI\Rust\Big_Project\libppm\ppm\src\lib.rs
+C:\Users\laptop-juba\Documents\Cours\Rust\Projet\libppm\ppm\target\debug\libppm.rlib: C:\Users\laptop-juba\Documents\Cours\Rust\Projet\libppm\ppm\src\lib.rs
