@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Pixel {
     pub red: u8,
     pub green: u8,
@@ -6,7 +6,7 @@ pub struct Pixel {
 }
 
 impl Pixel {
-    pub fn new(red: u8, green: u8, blue: u8) -> Pixel {
+    fn new(red: u8, green: u8, blue: u8) -> Pixel {
         Pixel {
             red: red,
             green: green,
@@ -14,49 +14,42 @@ impl Pixel {
         }
     }
 
-    pub fn display(self) -> String {
+    fn red(self) -> u8 {
+        self.red
+    }
+    fn green(self) -> u8 {
+        self.green
+    }
+    fn blue(self) -> u8 {
+        self.blue
+    }
+
+    fn display(self) -> String {
         format!("(r:{}, g:{}, b:{})", self.red, self.green, self.blue)
     }
 
-    pub fn invert(& mut self){
-        self.red = self.red - 255;
-        self.green = self.green - 255;
-        self.blue = self.blue - 255;
-
+    fn invert(&self) -> Pixel {
+        Pixel::new(255 - self.red(), 255 - self.green(), 255 - self.blue())
     }
 
     fn eq(self, other: Pixel) -> bool {
-         self.blue == other.blue && self.red == other.red && self.green == other.green
+        self.blue == other.blue && self.red == other.red && self.green == other.green
     }
-    pub fn grayscale(&mut self) {
-        self.red = self.red / 3;
-        self.green = self.green / 3;
-        self.blue = self.blue / 3;
 
+    fn partial_eq(self, other: Pixel) -> bool {
+        self.blue == other.blue || self.red == other.red || self.green == other.green
     }
-}
 
-pub fn red(pix: Pixel)-> u8{
-    pix.red
-}
-pub fn green(pix: Pixel)-> u8{
-    pix.green
-}
-pub fn blue(pix: Pixel)-> u8{
-    pix.blue
-}
-impl PartialEq for Pixel{
-    fn eq(&self,other:&Pixel)->bool{
-        return self.red==other.red || self.green==other.green || self.blue==other.blue;
+    fn grayscale(&self) -> Pixel {
+        Pixel::new(self.red() / 3, self.green() / 3, self.blue() / 3)
     }
 }
 
-pub struct Image{
-    vector:Vec<Pixel>,
-    width:usize,
-    height:usize
+pub struct Image {
+    vector: Vec<Pixel>,
+    width: usize,
+    height: usize,
 }
-
 
 //use std::fmt;
 //
@@ -79,21 +72,59 @@ mod tests {
 
     #[test]
     fn test_red() {
-        assert_eq!(red(get_sample_pixel()), 8)
+        assert_eq!(get_sample_pixel().red(), 8)
     }
 
     #[test]
     fn test_green() {
-        assert_eq!(green(get_sample_pixel()), 12)
+        assert_eq!(get_sample_pixel().green(), 12)
     }
 
     #[test]
     fn test_blue() {
-        assert_eq!(blue(get_sample_pixel()), 16)
+        assert_eq!(get_sample_pixel().blue(), 16)
     }
 
     #[test]
     fn test_display() {
         assert_eq!(get_sample_pixel().display(), "(r:8, g:12, b:16)")
+    }
+
+    #[test]
+    fn test_revert() {
+        let sample_pix: Pixel = get_sample_pixel();
+        let inverted_pix: Pixel = sample_pix.invert();
+        assert_eq!(inverted_pix.red(), 255 - sample_pix.red());
+        assert_eq!(inverted_pix.green(), 255 - sample_pix.green());
+        assert_eq!(inverted_pix.blue(), 255 - sample_pix.blue());
+    }
+
+    #[test]
+    fn test_grayscale() {
+        let sample_pix: Pixel = get_sample_pixel();
+        let grayscaled_pix: Pixel = sample_pix.grayscale();
+        assert_eq!(grayscaled_pix.red(), sample_pix.red() / 3);
+        assert_eq!(grayscaled_pix.green(), sample_pix.green() / 3);
+        assert_eq!(grayscaled_pix.blue(), sample_pix.blue() / 3);
+    }
+
+    #[test]
+    fn test_eq() {
+        let pix_1: Pixel = get_sample_pixel();
+        let pix_2: Pixel = get_sample_pixel();
+        let pix_3: Pixel = get_sample_pixel().invert();
+
+        assert_eq!(pix_1.eq(pix_2), true);
+        assert_eq!(pix_1.eq(pix_3), false);
+    }
+
+    #[test]
+    fn test_partial_eq() {
+        let pix_1: Pixel = get_sample_pixel();
+        let pix_2: Pixel = get_sample_pixel();
+        let pix_3: Pixel = get_sample_pixel().invert();
+
+        assert_eq!(pix_1.partial_eq(pix_2), true);
+        assert_eq!(pix_1.partial_eq(pix_3), false);
     }
 }
