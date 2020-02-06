@@ -1,0 +1,9 @@
+[package]
+name = "Projet_Rust"
+version = "0.1.0"
+authors = ["SAI-Aghylas <aghilassai@gmail.com>","OUMEDDAH-Merzouk <merzoukoumeddah@gmail.com>","SARNI-Juba-Saadi <juba.sarni@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
