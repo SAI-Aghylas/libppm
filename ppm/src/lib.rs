@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::num::ParseIntError;
 use std::path::Path;
-use std::str;
 use std::str::FromStr;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
