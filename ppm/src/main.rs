@@ -1,13 +1,12 @@
 extern crate libppm;
 
 use libppm::Image;
-use std::fs::File;
 use std::path::Path;
 
 pub fn main() {
-    /*
+
     /* Read the image we'll use the library on*/
-    let image_name: String = "image.ppm";
+    let image_name: &str = "image.ppm";
 
     println!(
         "********************** Reading the image: {} **********************",
@@ -30,20 +29,20 @@ pub fn main() {
 
     /* Save the resulting images */
     println!("********************** saving the resulting images: **********************");
-    let inverted_image_name: String = "inverted_image.ppm";
-    let grayscaled_image_name: String = "grayscaled_image.ppm";
+    let inverted_image_name: &str = "inverted_image.ppm";
+    let grayscaled_image_name: &str = "grayscaled_image.ppm";
 
-    inverted_image.save(inverted_image_name);
+    inverted_image.save(Path::new(inverted_image_name));
     println!(
         "Inverted image successfully saved into: {} .",
         inverted_image_name
     );
 
-    grayscaled_image.save(grayscaled_image_name);
+    grayscaled_image.save(Path::new(grayscaled_image_name));
     println!(
         "Grayscaled image successfully saved into: {} .",
         grayscaled_image_name
     );
-    */
+
     println!("Thank's !!");
 }

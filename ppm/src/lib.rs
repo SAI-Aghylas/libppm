@@ -1,6 +1,8 @@
 use std::fs::File;
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
+use std::num::ParseIntError;
 use std::path::Path;
+use std::str::FromStr;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Pixel {
@@ -51,6 +53,23 @@ impl Pixel {
     }
 }
 
+impl FromStr for Pixel {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let coords: Vec<&str> = s.split(' ').collect();
+
+        let red_str = coords[0].parse::<u8>()?;
+        let green_str = coords[1].parse::<u8>()?;
+        let blue_str = coords[2].parse::<u8>()?;
+
+        Ok(Pixel {
+            red: red_str,
+            green: green_str,
+            blue: blue_str,
+        })
+    }
+}
 #[derive(Clone)]
 pub struct Image {
     vector: Vec<Pixel>,
@@ -152,6 +171,46 @@ impl Image {
         }
 
         nb_saved_pixels
+    }
+
+    pub fn new_with_file(file_name: &Path) -> Image {
+        let file: File = match File::open(file_name) {
+            Ok(file) => file,
+            Err(err) => panic!("error when opening image: {}", err),
+        };
+
+        let lines = BufReader::new(file).lines();
+
+        let mut image: Image = Image::new(vec![], 0, 0);
+
+        let mut vector: Vec<Pixel> = Vec::new();
+
+        let mut read_lines = 0;
+        for line in lines {
+            read_lines += 1;
+            match line {
+                Ok(l) => {
+                    if read_lines == 1 || read_lines == 3 {
+                        println!(" *** skipping unneeded file line *** ")
+                    } else if read_lines == 2 {
+                        let mut cleaned_line: String = l.replace("\n", "");
+                        let height_and_widht: Vec<&str> = cleaned_line.split(" ").collect();
+                        image.width = height_and_widht[0].parse::<usize>().unwrap();
+                        image.height = height_and_widht[1].parse::<usize>().unwrap();
+                    } else {
+                        let mut cleaned_line: String = l.replace("\n", "");
+                        let pixels_str: Vec<&str> = cleaned_line.split("\t").collect();
+                        for pixel in pixels_str {
+                            vector.push(Pixel::from_str(pixel).unwrap());
+                        }
+                    }
+                }
+                Err(err) => panic!("error when unwrapping an image line: {}", err),
+            }
+        }
+        image.vector = vector;
+
+        image
     }
 }
 
@@ -336,5 +395,13 @@ mod tests {
             get_sample_image().save(Path::new("image_from_test.ppm")),
             (get_sample_image().width() * get_sample_image().height()) as i32
         )
+    }
+
+    #[test]
+    fn test_new_with_file() {
+        let img = get_sample_image();
+        let read_img = Image::new_with_file(Path::new("image_from_test.ppm"));
+
+        assert_eq!(read_img.eq(img), true);
     }
 }
