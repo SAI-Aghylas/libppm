@@ -12,6 +12,6 @@ path = "src/lib.rs"
 
 [[bin]]
 name = "mybin"
-path = "src/bin.rs"
+path = "src/main.rs"
 
 [dependencies]
