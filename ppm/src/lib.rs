@@ -146,14 +146,7 @@ impl Image {
     }
 }
 
-//use std::fmt;
-//
-////impl fmt::Display for Pixel{
-////    fn fmt(&self, f:&mut fmt:: Formatter<'_>) -> fmt::Result {
-////        write!(f,"(r:{}, g:{}, b:{})", self.red, self.green, self.blue)
-////
-////    }
-////}
+
 
 #[cfg(test)]
 mod tests {
