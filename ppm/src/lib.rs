@@ -89,24 +89,26 @@ impl Image {
         b
     }
 
-    pub fn invert_image(self) -> Image {
-        let mut vect_inv = vec![];
-        let mut j = 0;
-        for i in self.vector.iter() {
-            vect_inv.push(i.invert_pixel());
-            j += 1;
+    pub fn invert_image(&mut self) {
+        let mut i = 0;
+        loop {
+            if i >= self.vector.len() {
+                break;
+            };
+            self.vector[i].invert_pixel();
+            i += 1;
         }
-        Image::new(vect_inv, self.width, self.height)
     }
 
-    pub fn grayscale_image(self) -> Image {
-        let mut vect_inv = vec![];
-        let mut j = 0;
-        for i in self.vector.iter() {
-            vect_inv.push(i.grayscale_pixel());
-            j += 1;
+    pub fn grayscale_image(&mut self) {
+        let mut i = 0;
+        loop {
+            if i >= self.vector.len() {
+                break;
+            };
+            self.vector[i].grayscale_pixel();
+            i += 1;
         }
-        Image::new(vect_inv, self.width, self.height)
     }
 
     pub fn vector(self) -> Vec<Pixel> {
@@ -254,7 +256,7 @@ mod tests {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
         let mut pix_3: Pixel = get_sample_pixel().clone();
-        pix3.invert_pixel();
+        pix_3.invert_pixel();
 
         assert_eq!(pix_1.eq(pix_2), true);
         assert_eq!(pix_1.eq(pix_3), false);
@@ -265,7 +267,7 @@ mod tests {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
         let mut pix_3: Pixel = get_sample_pixel().clone();
-        pix3.invert_pixel();
+        pix_3.invert_pixel();
 
         assert_eq!(pix_1.partial_eq(pix_2), true);
         assert_eq!(pix_1.partial_eq(pix_3), false);
@@ -285,9 +287,13 @@ mod tests {
     #[test]
     fn test_invert_image() {
         let sample_img: Image = get_sample_image();
-        let inverted_img: Image = sample_img.clone().invert_image();
+        let mut inverted_img: Image = sample_img.clone();
+        inverted_img.invert_image();
         let mut j = 0;
         loop {
+            if j == sample_img.vector.len() {
+                break;
+            };
             assert_eq!(
                 inverted_img.vector[j].red(),
                 255 - sample_img.vector[j].red()
@@ -301,41 +307,34 @@ mod tests {
                 255 - sample_img.vector[j].blue()
             );
             j += 1;
-            if j == sample_img.vector.len() {
-                break;
-            }
         }
     }
 
     #[test]
     fn test_grayscale_image() {
         let sample_img: Image = get_sample_image();
-        let inverted_img: Image = sample_img.clone().grayscale_image();
+        let mut graycaled_img: Image = sample_img.clone();
+        graycaled_img.grayscale_image();
         let mut j = 0;
+        let mut graycaled_val = 0;
         loop {
-            assert_eq!(
-                inverted_img.vector[j].red(),
-                (sample_img.vector[j].red()) / 3
-            );
-            assert_eq!(
-                inverted_img.vector[j].green(),
-                (sample_img.vector[j].green()) / 3
-            );
-            assert_eq!(
-                inverted_img.vector[j].blue(),
-                (sample_img.vector[j].blue()) / 3
-            );
-            j += 1;
-            if j == sample_img.vector.len() {
+            if j >= sample_img.vector.len() {
                 break;
-            }
+            };
+            graycaled_val = sample_img.vector[j].red() / 3
+                + sample_img.vector[j].green() / 3
+                + sample_img.vector[j].blue() / 3;
+            assert_eq!(graycaled_img.vector[j].red(), graycaled_val);
+            assert_eq!(graycaled_img.vector[j].green(), graycaled_val);
+            assert_eq!(graycaled_img.vector[j].blue(), graycaled_val);
+            j += 1;
         }
     }
-        #[test]
-        fn test_save_image() {
-            assert_eq!(
-                get_sample_image().save(Path::new("image_from_test.ppm")),
-                (get_sample_image().width() * get_sample_image().height()) as i32
-            )
-        }
+    #[test]
+    fn test_save_image() {
+        assert_eq!(
+            get_sample_image().save(Path::new("image_from_test.ppm")),
+            (get_sample_image().width() * get_sample_image().height()) as i32
+        )
+    }
 }
