@@ -5,6 +5,7 @@ use std::fs::File;
 use std::path::Path;
 
 pub fn main() {
+    /*
     /* Read the image we'll use the library on*/
     let image_name: String = "image.ppm";
 
@@ -17,12 +18,14 @@ pub fn main() {
 
     /* Invert the image */
     println!("********************** Inverting the loaded image: **********************");
-    let inverted_image: Image = image.invert_image();
+    let mut inverted_image: Image = image.clone();
+    inverted_image.invert_image();
     println!("Invert successfull.");
 
     /* Invert the image */
     println!("********************** Grayscaling the loaded image: **********************");
-    let grayscaled_image: Image = image.grayscale_image();
+    let mut grayscaled_image: Image = image.clone();
+    grayscaled_image.grayscale_image();
     println!("Grayscaling successfull.");
 
     /* Save the resulting images */
@@ -41,6 +44,6 @@ pub fn main() {
         "Grayscaled image successfully saved into: {} .",
         grayscaled_image_name
     );
-
+    */
     println!("Thank's !!");
 }
