@@ -5,7 +5,7 @@ use std::path::Path;
 
 pub fn main() {
     /* Read the image we'll use the library on*/
-    let image_name: &str = "image.ppm";
+    let image_name: &str = ".\\image.ppm";
 
     println!(
         "********************** Reading the image: {} **********************",
@@ -28,8 +28,8 @@ pub fn main() {
 
     /* Save the resulting images */
     println!("********************** saving the resulting images: **********************");
-    let inverted_image_name: &str = "inverted_image.ppm";
-    let grayscaled_image_name: &str = "grayscaled_image.ppm";
+    let inverted_image_name: &str = ".\\inverted_image.ppm";
+    let grayscaled_image_name: &str = ".\\grayscaled_image.ppm";
 
     inverted_image.save(Path::new(inverted_image_name));
     println!(
