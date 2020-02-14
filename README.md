@@ -24,8 +24,7 @@ utilisez cargo bench "function name" pour exécuter le bench de la fonction "func
 ```
 **Lancer la  Doc:**
 ```
-utilisez cargo doc  pour exécuter tous les benchs disponibles dans notre librairie
-utilisez cargo doc "function name" pour exécuter le bench de la fonction "function name"
+utilisez cargo doc  pour génerer la doc dans le dossier libppm/ppm/target/doc/libppm toutes la doc de notre librairie
 
 ```
 
