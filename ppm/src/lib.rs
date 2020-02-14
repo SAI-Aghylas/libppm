@@ -1,4 +1,13 @@
+#![feature(test)]
+
+extern crate test;
+use test::Bencher;
+
+use std::fs::File;
+use std::io::{BufRead, BufReader, Write};
+use std::num::ParseIntError;
 use std::path::Path;
+use std::str::FromStr;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Pixel {
@@ -8,160 +17,239 @@ pub struct Pixel {
 }
 
 impl Pixel {
-    fn new(red: u8, green: u8, blue: u8) -> Pixel {
-        Pixel {
-            red: red,
-            green: green,
-            blue: blue,
-        }
+    pub fn new(red: u8, green: u8, blue: u8) -> Pixel {
+        Pixel { red, green, blue }
     }
 
-    fn red(self) -> u8 {
+    pub fn red(self) -> u8 {
         self.red
     }
-    fn green(self) -> u8 {
+    pub fn green(self) -> u8 {
         self.green
     }
-    fn blue(self) -> u8 {
+    pub fn blue(self) -> u8 {
         self.blue
     }
 
-    fn display(self) -> String {
+    pub fn display(self) -> String {
         format!("(r:{}, g:{}, b:{})", self.red, self.green, self.blue)
     }
 
-    fn invert(&self) -> Pixel {
-        Pixel::new(255 - self.red(), 255 - self.green(), 255 - self.blue())
-    }
-
-    fn eq(self, other: Pixel) -> bool {
+    pub fn eq(self, other: Pixel) -> bool {
         self.blue == other.blue && self.red == other.red && self.green == other.green
     }
 
-    fn partial_eq(self, other: Pixel) -> bool {
+    pub fn partial_eq(self, other: Pixel) -> bool {
         self.blue == other.blue || self.red == other.red || self.green == other.green
     }
 
-    fn grayscale(&self) -> Pixel {
-        Pixel::new(self.red() / 3, self.green() / 3, self.blue() / 3)
+    pub fn invert_pixel(&mut self) {
+        self.red = 255 - self.red();
+        self.green = 255 - self.green();
+        self.blue = 255 - self.blue();
+    }
+
+    pub fn grayscale_pixel(&mut self) {
+        let mean: u8 = (self.red() / 3) + (self.green() / 3) + (self.blue() / 3);
+
+        self.red = mean;
+        self.green = mean;
+        self.blue = mean;
     }
 }
 
+impl FromStr for Pixel {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let coords: Vec<&str> = s.split(' ').collect();
+
+        let red_str = coords[0].parse::<u8>()?;
+        let green_str = coords[1].parse::<u8>()?;
+        let blue_str = coords[2].parse::<u8>()?;
+
+        Ok(Pixel {
+            red: red_str,
+            green: green_str,
+            blue: blue_str,
+        })
+    }
+}
 #[derive(Clone)]
 pub struct Image {
     vector: Vec<Pixel>,
     width: usize,
     height: usize,
 }
-use std::fs::File;
-use std::io;
-use std::io::prelude::*;
-use std::io::{BufReader};
+
 impl Image {
-    fn new(vector: Vec<Pixel>, width: usize, height: usize) -> Image {
+    pub fn new(vector: Vec<Pixel>, width: usize, height: usize) -> Image {
         Image {
-            vector: vector,
-            width: width,
-            height: height,
+            vector,
+            width,
+            height,
         }
     }
 
-    fn vector(self) -> Vec<Pixel> {
+    pub fn eq(self, other: Image) -> bool {
+        let mut b = true;
+        if self.width == other.width
+            && self.height == other.height
+            && self.vector.len() == other.vector.len()
+        {
+            let mut i = 0;
+            loop {
+                if i >= self.vector.len() {
+                    break;
+                };
+                if !self.vector[i].eq(other.vector[i]) {
+                    break b = false;
+                }
+                i += 1;
+            }
+        } else {
+            b = false;
+        };
+        b
+    }
+
+    pub fn invert_image(&mut self) {
+        let mut i = 0;
+        loop {
+            if i >= self.vector.len() {
+                break;
+            };
+            self.vector[i].invert_pixel();
+            i += 1;
+        }
+    }
+
+    pub fn grayscale_image(&mut self) {
+        let mut i = 0;
+        loop {
+            if i >= self.vector.len() {
+                break;
+            };
+            self.vector[i].grayscale_pixel();
+            i += 1;
+        }
+    }
+
+    pub fn vector(self) -> Vec<Pixel> {
         self.vector
     }
-    fn width(self) -> usize {
+
+    pub fn width(self) -> usize {
         self.width
     }
-    fn height(self) -> usize {
+
+    pub fn height(self) -> usize {
         self.height
     }
 
-    fn new_with_file(filename: &Path) -> Image {
-        let mut file: File = match File::open(filename) {
+    pub fn save(self, file_name: &Path) -> i32 {
+        let mut file: File = match File::create(file_name) {
             Ok(file) => file,
-            Err(file) => panic!("aucun fichier trouvé"),
+            Err(err) => panic!("error when saving image: {}", err),
         };
-        let mut index=0;
-        let height_width=vec![""];
-        let mut v =vec![];
-        let buff=BufReader::new(file);
-        for line in buff.lines(){
-            let li=line.unwrap();
-            println!("{}",li);
-            if index==1 {
-                let height_width=li.split(' ');
+
+        let mut nb_written: i16 = 0;
+        let mut nb_saved_pixels: i32 = 0;
+
+        let img_vec: Vec<Pixel> = self.clone().vector();
+        let img_heigt: usize = self.clone().height();
+        let img_width: usize = self.clone().width();
+
+        write!(file, "P3\n{} {}\n{}\n", img_width, img_heigt, 255);
+
+        for val in img_vec.iter() {
+            write!(file, "{} {} {}", val.red(), val.green(), val.blue());
+            nb_written += 1;
+            nb_saved_pixels += 1;
+
+            if nb_written % (img_width as i16) == 0 {
+                write!(file, "\n");
+                nb_written = 0;
+            } else {
+                write!(file, "\t");
             }
-            else { if index >=3  {
-                    let m =li.split(' ');
-                    v.push(m);
+        }
+
+        nb_saved_pixels
+    }
+
+    pub fn new_with_file(file_name: &Path) -> Image {
+        let file: File = match File::open(file_name) {
+            Ok(file) => file,
+            Err(err) => panic!("error when opening image: {}", err),
+        };
+
+        let lines = BufReader::new(file).lines();
+
+        let mut image: Image = Image::new(vec![], 0, 0);
+
+        let mut vector: Vec<Pixel> = Vec::new();
+
+        let mut read_lines = 0;
+        for line in lines {
+            read_lines += 1;
+            match line {
+                Ok(l) => {
+                    if read_lines == 1 || read_lines == 3 {
+                        println!(" *** skipping unneeded file line *** ")
+                    } else if read_lines == 2 {
+                        let mut cleaned_line: String = l.replace("\n", "");
+                        let height_and_widht: Vec<&str> = cleaned_line.split(" ").collect();
+                        image.width = height_and_widht[0].parse::<usize>().unwrap();
+                        image.height = height_and_widht[1].parse::<usize>().unwrap();
+                    } else {
+                        let mut cleaned_line: String = l.replace("\n", "");
+                        let pixels_str: Vec<&str> = cleaned_line.split("\t").collect();
+                        for pixel in pixels_str {
+                            vector.push(Pixel::from_str(pixel).unwrap());
+                        }
                     }
+                }
+                Err(err) => panic!("error when unwrapping an image line: {}", err),
             }
-            index+=1;
-//            v=li.split_whitespace().to_vec();
         }
-        let height:usize=height_width[1].parse().unwrap();
-        let width:usize=height_width[0].parse().unwrap();
-        let mut i=0;
-        let mut vec_pix=vec![];
-        while i<=(height*width) {
-            let pix=Pixel::new(v[i],v[i+1],v[i+2]);
-            i+=3;
-            vec_pix.push(pix);
-        }
+        image.vector = vector;
 
-//        let v_vec=v[4..];
-//
-//        let mut contents = String::new();
-//        file.read_to_string(&mut contents);
-//        let mut subs=contents.split_whitespace();
-        let mut image=Image::new(vec![],0,0);
-        image.width=width;
-        image.height=height;
-        image.vector=vec_pix;
-        return image;
-//        let mut v=vec![];
-//        for i in subs{
-//            v.push(i.to_string());
-//        }
-//        let height=v[3].parse().unwrap();
-//        let width=v[2].parse().unwrap();
-//        for i in 0..height{
-//            for j in  0..width{
-//                let pix=Pixel::new()
-//            }
-//        }
-
-//
-//        println!("{}", contents);
-//        return contents;
+        image
     }
 }
-
-//use std::fmt;
-//
-////impl fmt::Display for Pixel{
-////    fn fmt(&self, f:&mut fmt:: Formatter<'_>) -> fmt::Result {
-////        write!(f,"(r:{}, g:{}, b:{})", self.red, self.green, self.blue)
-////
-////    }
-////}
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
-    use std::fmt::Display;
 
     fn get_sample_pixel() -> Pixel {
         Pixel::new(8, 12, 16)
     }
+
     fn get_sample_image() -> Image {
-        Image::new(vec![get_sample_pixel()], 12, 16)
+        Image::new(
+            vec![
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+            ],
+            3,
+            2,
+        )
     }
 
     #[test]
     fn test_red() {
         assert_eq!(get_sample_pixel().red(), 8)
+    }
+    #[bench]
+    fn bench_test_red(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().red() );
     }
 
     #[test]
@@ -180,41 +268,63 @@ mod tests {
     }
 
     #[test]
-    fn test_vecto() {
-        assert_eq!(get_sample_image().vector(), vec![get_sample_pixel()])
+    fn test_vector() {
+        assert_eq!(
+            get_sample_image().vector(),
+            vec![
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel(),
+                get_sample_pixel()
+            ]
+        )
     }
     #[test]
     fn test_width() {
-        assert_eq!(get_sample_image().width, 12)
+        assert_eq!(get_sample_image().width, 3)
     }
     #[test]
     fn test_height() {
-        assert_eq!(get_sample_image().height, 16)
+        assert_eq!(get_sample_image().height, 2)
     }
 
     #[test]
-    fn test_revert() {
+    fn test_invert_pixel() {
         let sample_pix: Pixel = get_sample_pixel();
-        let inverted_pix: Pixel = sample_pix.invert();
+        let mut inverted_pix: Pixel = sample_pix.clone();
+        inverted_pix.invert_pixel();
         assert_eq!(inverted_pix.red(), 255 - sample_pix.red());
         assert_eq!(inverted_pix.green(), 255 - sample_pix.green());
         assert_eq!(inverted_pix.blue(), 255 - sample_pix.blue());
     }
 
     #[test]
-    fn test_grayscale() {
+    fn test_grayscale_pixel() {
         let sample_pix: Pixel = get_sample_pixel();
-        let grayscaled_pix: Pixel = sample_pix.grayscale();
-        assert_eq!(grayscaled_pix.red(), sample_pix.red() / 3);
-        assert_eq!(grayscaled_pix.green(), sample_pix.green() / 3);
-        assert_eq!(grayscaled_pix.blue(), sample_pix.blue() / 3);
+        let mut grayscaled_pix: Pixel = sample_pix.clone();
+        grayscaled_pix.grayscale_pixel();
+        assert_eq!(
+            grayscaled_pix.red(),
+            (sample_pix.red() / 3) + (sample_pix.green() / 3) + (sample_pix.blue() / 3)
+        );
+        assert_eq!(
+            grayscaled_pix.green(),
+            (sample_pix.red() / 3) + (sample_pix.green() / 3) + (sample_pix.blue() / 3)
+        );
+        assert_eq!(
+            grayscaled_pix.blue(),
+            (sample_pix.red() / 3) + (sample_pix.green() / 3) + (sample_pix.blue() / 3)
+        );
     }
 
     #[test]
     fn test_eq_pixel() {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
-        let pix_3: Pixel = get_sample_pixel().invert();
+        let mut pix_3: Pixel = get_sample_pixel().clone();
+        pix_3.invert_pixel();
 
         assert_eq!(pix_1.eq(pix_2), true);
         assert_eq!(pix_1.eq(pix_3), false);
@@ -224,9 +334,83 @@ mod tests {
     fn test_partial_eq_pixel() {
         let pix_1: Pixel = get_sample_pixel();
         let pix_2: Pixel = get_sample_pixel();
-        let pix_3: Pixel = get_sample_pixel().invert();
+        let mut pix_3: Pixel = get_sample_pixel().clone();
+        pix_3.invert_pixel();
 
         assert_eq!(pix_1.partial_eq(pix_2), true);
         assert_eq!(pix_1.partial_eq(pix_3), false);
+    }
+
+    #[test]
+    fn test_eq_image() {
+        let img1: Image = get_sample_image();
+        let img2: Image = Image::new(vec![get_sample_pixel()], 3, 4);
+        let img3: Image = get_sample_image();
+        let img4: Image = Image::new(vec![Pixel::new(5, 12, 16)], 12, 16);
+        assert_eq!(img1.clone().eq(img3), true);
+        assert_eq!(img1.clone().eq(img2), false);
+        assert_eq!(img1.clone().eq(img4), false);
+    }
+
+    #[test]
+    fn test_invert_image() {
+        let sample_img: Image = get_sample_image();
+        let mut inverted_img: Image = sample_img.clone();
+        inverted_img.invert_image();
+        let mut j = 0;
+        loop {
+            if j == sample_img.vector.len() {
+                break;
+            };
+            assert_eq!(
+                inverted_img.vector[j].red(),
+                255 - sample_img.vector[j].red()
+            );
+            assert_eq!(
+                inverted_img.vector[j].green(),
+                255 - sample_img.vector[j].green()
+            );
+            assert_eq!(
+                inverted_img.vector[j].blue(),
+                255 - sample_img.vector[j].blue()
+            );
+            j += 1;
+        }
+    }
+
+    #[test]
+    fn test_grayscale_image() {
+        let sample_img: Image = get_sample_image();
+        let mut graycaled_img: Image = sample_img.clone();
+        graycaled_img.grayscale_image();
+        let mut j = 0;
+        let mut graycaled_val = 0;
+        loop {
+            if j >= sample_img.vector.len() {
+                break;
+            };
+            graycaled_val = sample_img.vector[j].red() / 3
+                + sample_img.vector[j].green() / 3
+                + sample_img.vector[j].blue() / 3;
+            assert_eq!(graycaled_img.vector[j].red(), graycaled_val);
+            assert_eq!(graycaled_img.vector[j].green(), graycaled_val);
+            assert_eq!(graycaled_img.vector[j].blue(), graycaled_val);
+            j += 1;
+        }
+    }
+    #[test]
+    fn test_save_image() {
+        assert_eq!(
+            get_sample_image().save(Path::new("image_from_test.ppm")),
+            (get_sample_image().width() * get_sample_image().height()) as i32
+        )
+    }
+
+    #[test]
+    fn test_new_with_file() {
+        let img = get_sample_image();
+        let read_img = Image::new_with_file(Path::new("image_from_test.ppm"));
+
+        assert_eq!(read_img.eq(img), true);
     }
 }
