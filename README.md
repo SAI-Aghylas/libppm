@@ -3,13 +3,24 @@
 **Membres du groupe:**
 ```
 Merzouk OUMEDDAH
-Juba	   SARNI
-Aghylas  SAI
+Juba	SARNI
+Aghylas SAI
 ```
 
 **Présentation:**
 ```
 Notre librairie libppm ,est une petite librairie Rust qui permet de manipuler le type d'image .ppm, on peut l'utiliser pour la création la lecture et la transformation des image .ppm ainsi que de leur sous-structure 'Pixel'
+```
+**Utilisation:**
+```
+extern crate libppm
+
+avant la main()
+
+use libppm::Image
+use libppm::Pixel
+pour utiliser Image ou Pixel dans notre programme main()
+
 ```
 **Lancer des tests:**
 ```
@@ -24,13 +35,12 @@ utilisez cargo bench "function name" pour exécuter le bench de la fonction "func
 ```
 **Lancer la  Doc:**
 ```
-utilisez cargo doc  pour exécuter tous les benchs disponibles dans notre librairie
-utilisez cargo doc "function name" pour exécuter le bench de la fonction "function name"
+utilisez cargo doc  pour génerer la doc dans le dossier libppm/ppm/target/doc/libppm toutes la doc de notre librairie
 
 ```
-
+**Lancer la  main:**
 
 ```
-git remote add origin git@github.com:USERNAME/libppm.git
-git push -u origin master
+se positionner dans le dossier src et exécuter cargo run
+
 ```
