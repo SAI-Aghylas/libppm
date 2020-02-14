@@ -10,9 +10,9 @@ Groupe 7 - Classe 4IABD1
 ```
 
 **Présentation:**
-```
+
 Notre librairie libppm ,est une petite librairie Rust qui permet de manipuler le type d'image .ppm. On peut l'utiliser pour la création, la lecture et la transformation des images .ppm ainsi que de leur sous-structure 'Pixel'
-```
+
 
 **Utilisation:**
 A importer dans le code où nous souhaitons utiliser la librairie
@@ -43,7 +43,6 @@ Elle se trouvera ensuite dans le dossier "./libppm/ppm/target/doc/libppm"
 
 **Exemple d'utilisation:**
 
-```
+
 Se positionner dans le dossier "src" et exécuter cargo run pour executer le programme exemple d'utilisation de la librairie et traiter quelques images.
 
-```
