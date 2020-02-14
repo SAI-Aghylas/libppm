@@ -4,11 +4,13 @@ use std::num::ParseIntError;
 use std::path::Path;
 use std::str::FromStr;
 
+
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Pixel {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
+    red: u8,
+    green: u8,
+    blue: u8,
 }
 
 impl Pixel {

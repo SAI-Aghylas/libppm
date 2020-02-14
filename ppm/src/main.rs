@@ -4,7 +4,6 @@ use libppm::Image;
 use std::path::Path;
 
 pub fn main() {
-
     /* Read the image we'll use the library on*/
     let image_name: &str = "image.ppm";
 
