@@ -222,15 +222,21 @@ impl Image {
 
         write!(file, "P3\n{} {}\n{}\n", img_width, img_heigt, 255);
 
+        let mut nb_pixels_in_cur_line = 0;
         for val in img_vec.iter() {
             write!(file, "{} {} {}", val.red(), val.green(), val.blue());
+            nb_pixels_in_cur_line += 1;
             nb_written += 1;
             nb_saved_pixels += 1;
 
             if nb_written % (img_width as i16) == 0 {
                 write!(file, "\n");
                 nb_written = 0;
-            } else {
+                nb_pixels_in_cur_line = 0;
+            } else if (nb_pixels_in_cur_line == 5){
+                nb_pixels_in_cur_line = 0;
+                write!(file,"\n");
+            }else {
                 write!(file, "\t");
             }
         }
