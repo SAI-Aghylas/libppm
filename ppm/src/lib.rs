@@ -5,45 +5,75 @@ use std::path::Path;
 use std::str::FromStr;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
+/// La structure Pixel représente l'encodage d'un pixel sur 24 bits (8 bits par élément du tuple rgb)
 pub struct Pixel {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
+    red: u8,
+    green: u8,
+    blue: u8,
 }
 
 impl Pixel {
+    /// Crée un nouveau Pixel à partir des éléments passés en argument
+    /// # Arguments
+    /// * red: u8
+    /// * green: u8
+    /// * blue: u8
+    /// # Return
+    /// * Pixel
     pub fn new(red: u8, green: u8, blue: u8) -> Pixel {
         Pixel { red, green, blue }
     }
 
+    /// Cette fonction retourne la valeur du champ `red` d'un Pixel
+    /// # Return
+    /// * `Pixel.red`: u8
     pub fn red(self) -> u8 {
         self.red
     }
+
+    /// Cette fonction retourne la valeur du champ `green` d'un Pixel
+    /// # Return
+    /// * `Pixel.green`: u8
     pub fn green(self) -> u8 {
         self.green
     }
+
+    /// Cette fonction retourne la valeur du champ `blue` d'un Pixel
+    /// # Return
+    /// * `Pixel.blue`: u8
     pub fn blue(self) -> u8 {
         self.blue
     }
 
+    /// `display` retourne un affichage d'un Pixel
+    /// # Return
+    /// description : String
     pub fn display(self) -> String {
         format!("(r:{}, g:{}, b:{})", self.red, self.green, self.blue)
     }
 
+    /// Compare deux Pixels
+    /// # Return
+    /// `true` si les deux pixels sont pareils.
     pub fn eq(self, other: Pixel) -> bool {
         self.blue == other.blue && self.red == other.red && self.green == other.green
     }
 
+    /// Compare partiellement  deux Pixels
+    /// # Return
+    /// `true` si les deux pixels sont partiellement pareils.
     pub fn partial_eq(self, other: Pixel) -> bool {
         self.blue == other.blue || self.red == other.red || self.green == other.green
     }
 
+    /// `invert_pixel` inverse les valeurs d'un Pixel, dans le but d'avoir le négatif du pixel.
     pub fn invert_pixel(&mut self) {
         self.red = 255 - self.red();
         self.green = 255 - self.green();
         self.blue = 255 - self.blue();
     }
 
+    /// `grayscale_pixel` transforme un Pixel en noir et blanc au lieu de RGB.
     pub fn grayscale_pixel(&mut self) {
         let mean: u8 = (self.red() / 3) + (self.green() / 3) + (self.blue() / 3);
 
@@ -71,6 +101,11 @@ impl FromStr for Pixel {
     }
 }
 #[derive(Clone)]
+/// La structure `Image` représente une image
+/// # Fields
+/// * `vector`: Vecteur des pixels de l'image
+/// * `width`: largeur de l'image, en nombre de pixels
+/// * `height`: hauteur de l'image, en nombre de pixels
 pub struct Image {
     vector: Vec<Pixel>,
     width: usize,
@@ -78,6 +113,13 @@ pub struct Image {
 }
 
 impl Image {
+    /// Cette fonction crée une nouvelle Image à partir des éléments passés en argument
+    /// # Arguments
+    /// * `vector`: Vecteur des pixels de l'image
+    /// * `width`: largeur de l'image, en nombre de pixels
+    /// * `height`: hauteur de l'image, en nombre de pixels
+    /// # Return
+    /// Une nouvelle Image
     pub fn new(vector: Vec<Pixel>, width: usize, height: usize) -> Image {
         Image {
             vector,
@@ -86,6 +128,9 @@ impl Image {
         }
     }
 
+    /// Compare deux Images
+    /// # Return
+    /// `true` si les deux Images sont pareils.
     pub fn eq(self, other: Image) -> bool {
         let mut b = true;
         if self.width == other.width
@@ -108,6 +153,7 @@ impl Image {
         b
     }
 
+    /// `invert_image` inverse les pixels d'une image, dans le but d'avoir le négatif de l'image.
     pub fn invert_image(&mut self) {
         let mut i = 0;
         loop {
@@ -119,6 +165,7 @@ impl Image {
         }
     }
 
+    /// `grayscale_image` transforme l'image du RGB en noir et blanc.
     pub fn grayscale_image(&mut self) {
         let mut i = 0;
         loop {
@@ -130,18 +177,32 @@ impl Image {
         }
     }
 
+    /// Cette fonction retourne le vecteur de pixels d'une image
+    /// # Return
+    /// * `Image.vector`: vec<Pixel>
     pub fn vector(self) -> Vec<Pixel> {
         self.vector
     }
 
+    /// Cette fonction retourne la largeur d'une image
+    /// # Return
+    /// * `Image.width`: usize
     pub fn width(self) -> usize {
         self.width
     }
 
+    /// Cette fonction retourne la hauteur d'une image
+    /// # Return
+    /// * `Image.height`: usize
     pub fn height(self) -> usize {
         self.height
     }
 
+    /// `save` enregistre une Image dans le fichier spécifié
+    /// # Argument
+    /// * file_name: Fichier de sortie
+    /// # Return
+    /// * Nombre de Pixels enregistrés
     pub fn save(self, file_name: &Path) -> i32 {
         let mut file: File = match File::create(file_name) {
             Ok(file) => file,
@@ -173,6 +234,11 @@ impl Image {
         nb_saved_pixels
     }
 
+    /// `new_with_file` Charge une image à partir d'un fichier
+    /// # Argument
+    /// * file_name: Image à charger
+    /// # Return
+    /// * Image contenues dans le fichier
     pub fn new_with_file(file_name: &Path) -> Image {
         let file: File = match File::open(file_name) {
             Ok(file) => file,
