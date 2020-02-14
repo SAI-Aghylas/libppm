@@ -1,3 +1,7 @@
+#![feature(test)]
+extern crate test;
+use test::Bencher;
+
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::num::ParseIntError;
@@ -405,5 +409,72 @@ mod tests {
         let read_img = Image::new_with_file(Path::new("image_from_test.ppm"));
 
         assert_eq!(read_img.eq(img), true);
+    }
+
+    //Begin Benchmarks:
+    #[bench]
+    fn bench_test_red(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().red() );
+    }
+    #[bench]
+    fn bench_test_green(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().green() );
+    }
+    #[bench]
+    fn bench_test_blue(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().blue() );
+    }
+    #[bench]
+    fn bench_test_display(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().display() );
+    }
+    #[bench]
+    fn bench_test_vector(b: &mut Bencher) {
+        b.iter(||get_sample_image().vector() );
+    }
+    #[bench]
+    fn bench_test_width(b: &mut Bencher) {
+        b.iter(||get_sample_image().width() );
+    }
+    #[bench]
+    fn bench_test_height(b: &mut Bencher) {
+        b.iter(||get_sample_image().height() );
+    }
+    #[bench]
+    fn bench_test_invert_pixel(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().invert_pixel() );
+    }
+    #[bench]
+    fn bench_test_grayscale_pixel(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().grayscale_pixel() );
+    }
+    #[bench]
+    fn bench_test_eq_pixel(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().eq(get_sample_pixel()) );
+    }
+    #[bench]
+    fn bench_test_partial_eq_pixel(b: &mut Bencher) {
+        b.iter(||get_sample_pixel().partial_eq(get_sample_pixel()) );
+    }
+    #[bench]
+    fn bench_test_eq_image(b: &mut Bencher) {
+        b.iter(||get_sample_image().eq(get_sample_image()) );
+    }
+    #[bench]
+    fn bench_test_invert_image(b: &mut Bencher) {
+        b.iter(||get_sample_image().invert_image() );
+    }
+    #[bench]
+    fn bench_test_grayscale_image(b: &mut Bencher) {
+        b.iter(||get_sample_image().grayscale_image());
+    }
+    #[bench]
+    fn bench_test_save_image(b: &mut Bencher) {
+        b.iter(||get_sample_image().save(Path::new("image_from_test.ppm")));
+    }
+    #[bench]
+    fn bench_test_new_with_file(b: &mut Bencher) {
+        let img   =Image::new_with_file(Path::new("image_from_test.ppm"));
+        b.iter(|| &img);
     }
 }
